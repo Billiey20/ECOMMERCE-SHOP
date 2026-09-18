@@ -243,3 +243,23 @@ INSERT INTO Discounts (code, discount_type, value, min_order_value, valid_from, 
   ('OILS20',     'percentage', 20.00, 30.00, '2026-09-01', '2026-12-31', TRUE),
   ('FRESH15',    'percentage', 15.00, 20.00, '2026-09-01', '2026-10-31', TRUE),
   ('SAVE5',      'fixed',       5.00, 25.00, '2026-09-01', '2026-12-31', TRUE);
+
+-- =====================================================
+-- ORDERS & ORDER ITEMS
+-- =====================================================
+INSERT INTO Orders (id, user_id, total_amount, status, payment_status, shipping_address, created_at) VALUES
+  (1, 4, 38.98, 'delivered', 'paid', '124 Market St, San Francisco, CA', NOW() - INTERVAL 3 DAY),
+  (2, 4, 69.97, 'delivered', 'paid', '89 Ocean Ave, Santa Monica, CA',   NOW() - INTERVAL 2 DAY),
+  (3, 4, 24.99, 'shipped',   'paid', '45 Pine Rd, Seattle, WA',           NOW() - INTERVAL 1 DAY),
+  (4, 4, 52.98, 'processing','paid', '77 Willow Lane, Austin, TX',        NOW());
+
+INSERT INTO Order_Items (order_id, variant_id, product_title, variant_title, sku, quantity, price_at_purchase) VALUES
+  (1, 1, 'Pure Sweet Almond Oil', '100ml', 'OIL-ALM-100', 1, 12.99),
+  (1, 16, 'Sensitive Skin Laundry Liquid', '1 Litre', 'LAU-SEN-1L', 2, 11.99),
+  (2, 8, 'Argan Oil (Liquid Gold)', '50ml', 'OIL-ARG-50', 1, 24.99),
+  (2, 12, 'Vitamin C Brightening Serum', '30ml', 'SKN-VCS-30', 1, 29.99),
+  (2, 4, 'Organic Coconut Oil', '200ml', 'OIL-COC-200', 1, 14.99),
+  (3, 8, 'Argan Oil (Liquid Gold)', '50ml', 'OIL-ARG-50', 1, 24.99),
+  (4, 14, 'Shea Butter Body Wash', '250ml', 'WASH-SHE-250', 2, 9.99),
+  (4, 11, 'Lavender Essential Oil', '30ml', 'ESS-LAV-30', 1, 22.99);
+

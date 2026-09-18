@@ -44,19 +44,35 @@ exports.getAnalytics = async (req, res) => {
         const [kpis] = await db.query(`
             SELECT 
                 COUNT(id) as total_orders,
-                SUM(total_amount) as total_revenue,
-                AVG(total_amount) as avg_order_value
+                COALESCE(SUM(total_amount), 0) as total_revenue,
+                COALESCE(AVG(total_amount), 0) as avg_order_value
             FROM Orders
             WHERE status != 'cancelled' AND status != 'refunded'
         `);
 
+        // If no orders yet, provide day entry for today so charts have clean data structure
+        let finalRevenueByDay = revenueByDay;
+        if (!finalRevenueByDay || finalRevenueByDay.length === 0) {
+            finalRevenueByDay = [{
+                date: new Date().toISOString().split('T')[0],
+                revenue: 0,
+                orders: 0
+            }];
+        }
+
+        const kpiData = {
+            total_orders: Number(kpis[0]?.total_orders || 0),
+            total_revenue: parseFloat(kpis[0]?.total_revenue || 0),
+            avg_order_value: parseFloat(Number(kpis[0]?.avg_order_value || 0).toFixed(2))
+        };
+
         res.status(200).json({
             success: true,
             data: {
-                revenueByDay,
-                topProducts,
-                statusBreakdown,
-                kpis: kpis[0]
+                revenueByDay: finalRevenueByDay,
+                topProducts: topProducts || [],
+                statusBreakdown: statusBreakdown || [],
+                kpis: kpiData
             }
         });
 
