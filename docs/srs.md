@@ -6,14 +6,18 @@
 ### 1. Introduction
 ShopFlow is a custom-built, production-style ecommerce operations platform designed to simulate and manage a direct-to-consumer (DTC) storefront and backend admin. The system covers everything from product and inventory management to order fulfillment, customer experience, and analytics.
 
-### 2. The Business: Lumora Skin
-Lumora Skin sells premium skincare products.
-**Initial Product Catalog:**
-- Vitamin C Serum (30ml, 50ml)
-- Hydrating Cream (50ml, 100ml)
-- Gentle Cleanser (150ml)
-- SPF 50 Sunscreen (50ml)
-- Hyaluronic Acid Serum (30ml)
+### 2. The Business: Lumora Body & Home
+Lumora sells premium body care, oils, and home detergent products.
+
+**Product Categories:**
+- **Body Oils:** Sweet Almond, Coconut, Rosehip, Jojoba, Avocado, Argan, Castor, Grapeseed, Marula, Sea Buckthorn
+- **Essential Oils:** Lavender, Tea Tree, Peppermint, Eucalyptus, Rose, Frankincense
+- **Hair Oils:** Bhringraj, Jamaican Black Castor, Amla & Brahmi, Rosemary Scalp
+- **Massage Oils:** Lavender Relaxing, Deep Muscle Relief, Warming Ginger
+- **Skincare:** Vitamin C Serum, Hyaluronic Acid Serum, Niacinamide Serum, Retinol Night Serum, Hydrating Cream, SPF 50 Sunscreen, Gentle Cleanser, AHA/BHA Toner
+- **Body Washes & Soaps:** Shea Butter Wash, Charcoal Wash, Coconut & Honey, Citrus Energy, Aloe Bar Soap, Turmeric Bar Soap, African Black Soap, Himalayan Salt Scrub Soap
+- **Laundry Detergents & Fabric Care:** Sensitive Skin Laundry Liquid, Lavender Powder, Eco Concentrated Liquid, Colour Protect Capsules, Cotton Dream Softener, Vinegar Fabric Rinse
+
 
 ### 3. User Roles & Permissions
 

@@ -82,24 +82,27 @@ exports.getAnalytics = async (req, res) => {
             data: {
                 revenueByDay,
                 topProducts: [
-                    { product_title: 'Vitamin C Serum', units_sold: 148, revenue: 4363.52 },
-                    { product_title: 'Hyaluronic Acid Serum', units_sold: 120, revenue: 4798.80 },
-                    { product_title: 'Hydrating Cream', units_sold: 98, revenue: 3429.02 },
-                    { product_title: 'SPF 50 Sunscreen', units_sold: 77, revenue: 2156.00 },
-                    { product_title: 'Gentle Cleanser', units_sold: 55, revenue: 1210.00 },
+                    { product_title: 'Argan Oil (Liquid Gold)',       units_sold: 210, revenue: 8189.90 },
+                    { product_title: 'Vitamin C Brightening Serum',   units_sold: 185, revenue: 5547.15 },
+                    { product_title: 'Organic Coconut Oil',           units_sold: 172, revenue: 4988.28 },
+                    { product_title: 'Shea Butter Body Wash',         units_sold: 168, revenue: 2855.32 },
+                    { product_title: 'Rosemary Scalp Oil',            units_sold: 145, revenue: 4930.05 },
+                    { product_title: 'Lavender Essential Oil',        units_sold: 138, revenue: 3173.38 },
+                    { product_title: 'Sensitive Skin Laundry Liquid', units_sold: 121, revenue: 3267.79 },
+                    { product_title: 'Hyaluronic Acid Serum',         units_sold: 117, revenue: 4679.43 },
                 ],
                 statusBreakdown: [
-                    { status: 'delivered', count: 842 },
-                    { status: 'shipped', count: 201 },
-                    { status: 'processing', count: 88 },
-                    { status: 'packed', count: 47 },
-                    { status: 'refunded', count: 32 },
-                    { status: 'cancelled', count: 19 },
+                    { status: 'delivered',  count: 1204 },
+                    { status: 'shipped',    count: 318  },
+                    { status: 'processing', count: 145  },
+                    { status: 'packed',     count: 67   },
+                    { status: 'refunded',   count: 52   },
+                    { status: 'cancelled',  count: 28   },
                 ],
                 kpis: {
-                    total_orders: 1284,
-                    total_revenue: 48290.75,
-                    avg_order_value: 37.61
+                    total_orders:    1814,
+                    total_revenue:   72480.55,
+                    avg_order_value: 39.95
                 }
             },
             mock: true
