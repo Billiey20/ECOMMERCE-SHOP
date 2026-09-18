@@ -12,24 +12,25 @@ const ProductDetail = () => {
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
-    // In production: fetch from /api/storefront/products/:id
-    const mockProducts = {
-      1: { id: 1, title: 'Vitamin C Serum', vendor: 'Lumora Skin',
-           description: 'A powerful brightening serum clinically proven to reduce the appearance of dark spots, uneven skin tone, and signs of ageing. Formulated with 15% stabilised L-Ascorbic Acid.',
-           variants: [
-             { id: 101, title: '30ml', price: '29.99', sku: 'LUM-VITC-30', available: 15 },
-             { id: 102, title: '50ml', price: '45.00', sku: 'LUM-VITC-50', available: 0  },
-           ]},
-      2: { id: 2, title: 'Hydrating Cream', vendor: 'Lumora Skin',
-           description: 'A rich, non-greasy moisturiser that locks in hydration for up to 72 hours. Powered by Ceramide Complex and Snow Mushroom Extract.',
-           variants: [
-             { id: 201, title: '50ml',  price: '34.99', sku: 'LUM-HC-50',  available: 3  },
-             { id: 202, title: '100ml', price: '54.99', sku: 'LUM-HC-100', available: 22 },
-           ]},
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/storefront/products/${id}`);
+        const data = await res.json();
+        
+        if (data.success && data.data) {
+          setProduct(data.data);
+          if (data.data.variants && data.data.variants.length > 0) {
+            setSelectedVariant(data.data.variants[0]);
+          }
+        } else {
+          console.error('Product not found');
+        }
+      } catch (err) {
+        console.error('Error fetching product details:', err);
+      }
     };
-    const p = mockProducts[id] || mockProducts[1];
-    setProduct(p);
-    setSelectedVariant(p.variants[0]);
+    
+    fetchProduct();
   }, [id]);
 
   const handleAddToCart = () => {

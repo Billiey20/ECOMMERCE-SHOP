@@ -58,3 +58,37 @@ exports.getStorefrontCollection = async (req, res) => {
     }
 };
 
+// @desc    Get all active products for the storefront
+// @route   GET /api/storefront/products
+// @access  Public
+exports.getStorefrontProducts = async (req, res) => {
+    try {
+        const [products] = await db.query(`
+            SELECT p.id, p.title, p.vendor, p.product_type,
+                   MIN(v.price) as starting_price,
+                   SUM(i.available) as total_inventory
+            FROM Products p
+            LEFT JOIN Variants v ON p.id = v.product_id
+            LEFT JOIN Inventory i ON v.id = i.variant_id
+            WHERE p.status = 'active'
+            GROUP BY p.id
+        `);
+        res.status(200).json({ success: true, data: products });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Server Error' });
+    }
+};
+
+// @desc    Get all collections for the storefront
+// @route   GET /api/storefront/collections
+// @access  Public
+exports.getStorefrontCollections = async (req, res) => {
+    try {
+        const [collections] = await db.query('SELECT id, title, description FROM Collections');
+        res.status(200).json({ success: true, data: collections });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Server Error' });
+    }
+};

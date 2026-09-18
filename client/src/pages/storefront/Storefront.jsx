@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
 import '../../styles/storefront.css';
 
-const FEATURED_PRODUCTS = [
-  { id: 1, title: 'Vitamin C Serum',       variant: '30ml', price: '29.99', badge: 'Best Seller' },
-  { id: 2, title: 'Hydrating Cream',        variant: '50ml', price: '34.99', badge: 'New' },
-  { id: 3, title: 'Hyaluronic Acid Serum',  variant: '30ml', price: '39.99', badge: null },
-  { id: 4, title: 'SPF 50 Sunscreen',       variant: '50ml', price: '28.00', badge: null },
-];
+const Homepage = () => {
+  const [featuredProducts, setFeaturedProducts] = useState([]);
 
-const Homepage = () => (
+  useEffect(() => {
+    fetch('http://localhost:5000/api/storefront/products')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Take top 4 for the homepage
+          setFeaturedProducts(data.data.slice(0, 4));
+        }
+      })
+      .catch(err => console.error('Error fetching featured products:', err));
+  }, []);
+
+  return (
   <div>
     <StorefrontNav />
 
@@ -60,16 +68,15 @@ const Homepage = () => (
       </div>
 
       <div className="sf-product-grid">
-        {FEATURED_PRODUCTS.map(p => (
+        {featuredProducts.map(p => (
           <Link key={p.id} to={`/product/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="sf-product-card">
               <div className="sf-product-card-image">
-                {p.badge && <span className="sf-product-badge">{p.badge}</span>}
-                <span style={{ opacity: 0.4 }}>Image</span>
+                <span style={{ opacity: 0.4 }}>{p.product_type}</span>
               </div>
-              <p className="sf-product-vendor">Lumora Skin</p>
+              <p className="sf-product-vendor">{p.vendor}</p>
               <h3 className="sf-product-title">{p.title}</h3>
-              <p className="sf-product-price">From ${p.price}</p>
+              <p className="sf-product-price">From ${p.starting_price}</p>
             </div>
           </Link>
         ))}
@@ -94,6 +101,7 @@ const Homepage = () => (
       <p>© 2026 Lumora Skin. All rights reserved. · Demo by ShopFlow</p>
     </footer>
   </div>
-);
+  );
+};
 
 export default Homepage;

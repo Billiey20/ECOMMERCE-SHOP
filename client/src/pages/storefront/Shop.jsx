@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
 
@@ -13,21 +13,36 @@ const Shop = () => {
   const [sort, setSort] = useState('best_selling');
   const [activeCollection, setActiveCollection] = useState('all');
 
-  const collections = [
-    { id: 'all', title: 'All Products' },
-    { id: 1, title: 'Best Sellers' },
-    { id: 2, title: 'New Arrivals' },
-    { id: 3, title: 'Skincare Essentials' },
-  ];
+  const [products, setProducts] = useState([]);
+  const [collections, setCollections] = useState([{ id: 'all', title: 'All Products' }]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock product grid — will be hydrated from API
-  const products = [
-    { id: 1, title: 'Vitamin C Serum', vendor: 'Lumora Skin', starting_price: '29.99', total_inventory: 15 },
-    { id: 2, title: 'Hydrating Cream', vendor: 'Lumora Skin', starting_price: '34.99', total_inventory: 8 },
-    { id: 3, title: 'Gentle Cleanser', vendor: 'Lumora Skin', starting_price: '22.00', total_inventory: 0 },
-    { id: 4, title: 'SPF 50 Sunscreen', vendor: 'Lumora Skin', starting_price: '28.00', total_inventory: 5 },
-    { id: 5, title: 'Hyaluronic Acid Serum', vendor: 'Lumora Skin', starting_price: '39.99', total_inventory: 20 },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [prodRes, colRes] = await Promise.all([
+          fetch('http://localhost:5000/api/storefront/products'),
+          fetch('http://localhost:5000/api/storefront/collections')
+        ]);
+        
+        const prodData = await prodRes.json();
+        const colData = await colRes.json();
+
+        if (prodData.success) {
+          setProducts(prodData.data);
+        }
+        if (colData.success) {
+          setCollections([{ id: 'all', title: 'All Products' }, ...colData.data]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch shop data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
   return (
     <div>
