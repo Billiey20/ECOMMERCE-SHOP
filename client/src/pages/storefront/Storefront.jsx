@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
+import { getProductImage } from '../../utils/imageMapper';
 import '../../styles/storefront.css';
 
 const Homepage = () => {
@@ -25,7 +26,7 @@ const Homepage = () => {
     {/* ── HERO ─────────────────────────────────── */}
     <section className="sf-hero">
       <div className="sf-hero-text">
-        <p className="sf-hero-eyebrow">Lumora Skin — Premium Skincare</p>
+        <p className="sf-hero-eyebrow">ShopFlow — Premium Commerce</p>
         <h1 className="sf-hero-title">
           Glow From<br />
           <em>Within</em>
@@ -40,8 +41,8 @@ const Homepage = () => {
         </div>
       </div>
 
-      <div className="sf-hero-image">
-        LUMORA SKIN
+      <div className="sf-hero-image" style={{ overflow: 'hidden' }}>
+        <img src="/images/serum.jpg" alt="ShopFlow Hero" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
     </section>
 
@@ -71,8 +72,8 @@ const Homepage = () => {
         {featuredProducts.map(p => (
           <Link key={p.id} to={`/product/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="sf-product-card">
-              <div className="sf-product-card-image">
-                <span style={{ opacity: 0.4 }}>{p.product_type}</span>
+              <div className="sf-product-card-image" style={{ overflow: 'hidden' }}>
+                <img src={getProductImage(p.product_type)} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <p className="sf-product-vendor">{p.vendor}</p>
               <h3 className="sf-product-title">{p.title}</h3>
@@ -90,15 +91,15 @@ const Homepage = () => {
     {/* ── BRAND STRIP ──────────────────────────── */}
     <section style={{ background: 'var(--brand-cream)', padding: '80px 40px', textAlign: 'center' }}>
       <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(22px, 3vw, 36px)', color: 'var(--brand-dark)', maxWidth: 700, margin: '0 auto', lineHeight: 1.6, fontStyle: 'italic' }}>
-        "Skincare shouldn't be complicated. We believe every routine should feel like a ritual."
+        "Commerce shouldn't be complicated. We believe every routine should feel like a ritual."
       </p>
-      <p style={{ marginTop: 24, color: 'var(--brand-muted)', letterSpacing: 2, textTransform: 'uppercase', fontSize: 12 }}>— Lumora Skin</p>
+      <p style={{ marginTop: 24, color: 'var(--brand-muted)', letterSpacing: 2, textTransform: 'uppercase', fontSize: 12 }}>— ShopFlow</p>
     </section>
 
     {/* ── FOOTER ───────────────────────────────── */}
     <footer className="sf-footer">
-      <p style={{ marginBottom: 8 }}><strong>LUMORA SKIN</strong></p>
-      <p>© 2026 Lumora Skin. All rights reserved. · Demo by ShopFlow</p>
+      <p style={{ marginBottom: 8 }}><strong>SHOPFLOW</strong></p>
+      <p>© 2026 ShopFlow. All rights reserved. · E-commerce Demo</p>
     </footer>
   </div>
   );

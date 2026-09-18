@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
 import { useCart } from '../../context/CartContext';
+import { getProductImage } from '../../utils/imageMapper';
 import '../../styles/storefront.css';
 
 const ProductDetail = () => {
@@ -56,8 +57,8 @@ const ProductDetail = () => {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 40px', display: 'flex', gap: 60, alignItems: 'flex-start' }}>
         
         {/* Image */}
-        <div style={{ flex: 1, background: 'linear-gradient(145deg, var(--brand-cream), var(--brand-blush))', minHeight: 500, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Playfair Display', serif", fontSize: 20, color: 'var(--brand-mid)' }}>
-          LUMORA SKIN
+        <div style={{ flex: 1, minHeight: 500, borderRadius: 12, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src={getProductImage(product.product_type)} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
 
         {/* Info */}
@@ -134,7 +135,7 @@ const ProductDetail = () => {
       </div>
 
       <footer className="sf-footer">
-        <p><strong>LUMORA SKIN</strong> · © 2026 · Demo by ShopFlow</p>
+        <p><strong>SHOPFLOW</strong> · © 2026 · E-commerce Demo</p>
       </footer>
     </div>
   );

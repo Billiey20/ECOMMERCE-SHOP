@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
+import { getProductImage } from '../../utils/imageMapper';
 
 const SORT_OPTIONS = [
   { label: 'Best Selling', value: 'best_selling' },
@@ -18,32 +19,48 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Fetch collections once on mount
+    const fetchCollections = async () => {
       try {
-        const [prodRes, colRes] = await Promise.all([
-          fetch('http://localhost:5000/api/storefront/products'),
-          fetch('http://localhost:5000/api/storefront/collections')
-        ]);
-        
-        const prodData = await prodRes.json();
+        const colRes = await fetch('http://localhost:5000/api/storefront/collections');
         const colData = await colRes.json();
-
-        if (prodData.success) {
-          setProducts(prodData.data);
-        }
         if (colData.success) {
           setCollections([{ id: 'all', title: 'All Products' }, ...colData.data]);
         }
       } catch (err) {
-        console.error('Failed to fetch shop data:', err);
+        console.error('Failed to fetch collections:', err);
+      }
+    };
+    fetchCollections();
+  }, []);
+
+  useEffect(() => {
+    // Fetch products whenever activeCollection changes
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        let endpoint = 'http://localhost:5000/api/storefront/products';
+        if (activeCollection !== 'all') {
+          endpoint = `http://localhost:5000/api/storefront/collections/${activeCollection}`;
+        }
+        
+        const res = await fetch(endpoint);
+        const data = await res.json();
+
+        if (data.success) {
+          // The collection endpoint returns { id, title, products: [...] }
+          // The products endpoint returns an array directly
+          setProducts(activeCollection === 'all' ? data.data : data.data.products || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchData();
-  }, []);
-
+    fetchProducts();
+  }, [activeCollection]);
   return (
     <div>
       <StorefrontNav />
@@ -93,8 +110,8 @@ const Shop = () => {
                     onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
                   >
                     {/* Product Image Placeholder */}
-                    <div style={{ height: '220px', backgroundColor: 'var(--brand-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ color: 'var(--brand-mid)', fontFamily: "'Playfair Display', serif" }}>LUMORA</span>
+                    <div style={{ height: '220px', backgroundColor: 'var(--brand-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <img src={getProductImage(product.product_type)} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
 
                     <div style={{ padding: '15px' }}>
@@ -115,7 +132,7 @@ const Shop = () => {
         </div>
       </div>
       <footer className="sf-footer" style={{ marginTop: '60px' }}>
-        <p><strong>LUMORA SKIN</strong> · © 2026 · Demo by ShopFlow</p>
+        <p><strong>SHOPFLOW</strong> · © 2026 · E-commerce Demo</p>
       </footer>
     </div>
   );

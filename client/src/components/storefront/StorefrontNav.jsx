@@ -11,13 +11,13 @@ const StorefrontNav = () => {
   return (
     <>
       <nav className="sf-nav">
-        <Link to="/" className="sf-nav-logo">LUMORA SKIN</Link>
+        <Link to="/" className="sf-nav-logo">SHOPFLOW</Link>
 
         <div className="sf-nav-links">
           <Link to="/shop">Shop All</Link>
-          <Link to="/shop">Serums</Link>
-          <Link to="/shop">Moisturisers</Link>
-          <Link to="/shop">Suncare</Link>
+          <Link to="/shop">Oils</Link>
+          <Link to="/shop">Skincare</Link>
+          <Link to="/shop">Body & Bath</Link>
         </div>
 
         <div className="sf-nav-actions">
