@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment files (NEVER commit these)
+.env
+
+# Build output
+client/dist/
+
+# Cypress test artifacts
+client/cypress/videos/
+client/cypress/screenshots/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
