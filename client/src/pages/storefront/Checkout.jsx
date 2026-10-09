@@ -1,21 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
+import StripePaymentForm from '../../components/storefront/StripePaymentForm';
 import '../../styles/storefront.css';
+
+// Load Stripe outside of component
+const stripePromise = loadStripe('pk_test_mock_key');
 
 const STEPS = ['Contact', 'Shipping', 'Payment'];
 
 const Checkout = () => {
   const { items, subtotal, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [form, setForm] = useState({
-    email: '', first_name: '', last_name: '',
+    user_id: user ? user.id : null,
+    email: user ? user.email : '', 
+    first_name: user ? user.first_name : '', 
+    last_name: user ? user.last_name : '',
     address: '', city: '', country: 'United Kingdom', postcode: '',
     card_number: '4242 4242 4242 4242', card_expiry: '12/28', card_cvc: '123',
   });
+
+  useEffect(() => {
+    if (user) {
+      setForm(f => ({ ...f, user_id: user.id, email: user.email, first_name: user.first_name, last_name: user.last_name }));
+    }
+  }, [user]);
 
   const shipping = subtotal > 60 ? 0 : 4.99;
   const [promoCode, setPromoCode] = useState('');
@@ -61,35 +78,39 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (step < 2) { setStep(s => s + 1); return; }
+  };
 
-    // Simulate payment processing & API call
+  const handlePaymentSuccess = async () => {
     setProcessing(true);
     
     try {
       const response = await fetch('http://localhost:5000/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': user ? `Bearer ${user.token}` : undefined
+        },
         body: JSON.stringify({
+          user_id: user?.id,
           customer: form,
           items: items,
           shipping: shipping,
           subtotal: subtotal,
           discount: discount,
           promoCode: promoApplied?.code,
-          total: total
+          total: total,
+          payment_status: 'paid'
         })
       });
 
       const data = await response.json();
       
-      // If we don't have a backend running, fallback to a mock ID
       const orderId = data.success ? data.orderId : Math.floor(10000 + Math.random() * 90000);
       
       clearCart();
       navigate(`/order-confirmation/${orderId}`);
     } catch (err) {
       console.error(err);
-      // Fallback for demo without backend
       const mockOrderId = Math.floor(10000 + Math.random() * 90000);
       clearCart();
       navigate(`/order-confirmation/${mockOrderId}`);
@@ -172,22 +193,22 @@ const Checkout = () => {
 
             {/* Step 2: Payment */}
             {step === 2 && (
-              <div>
-                <h3 style={{ marginBottom: 8 }}>Payment</h3>
-                <p style={{ color: 'var(--brand-muted)', fontSize: 13, marginBottom: 16 }}>🔒 Simulated payment — no real charge</p>
-                <input style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: 2 }} placeholder="Card number" value={form.card_number} onChange={e => set('card_number', e.target.value)} />
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <input style={inputStyle} placeholder="MM/YY" value={form.card_expiry} onChange={e => set('card_expiry', e.target.value)} />
-                  <input style={inputStyle} placeholder="CVC" value={form.card_cvc} onChange={e => set('card_cvc', e.target.value)} />
-                </div>
-              </div>
+              <Elements stripe={stripePromise}>
+                <StripePaymentForm 
+                  total={total} 
+                  onPaymentSuccess={handlePaymentSuccess} 
+                  onBack={() => setStep(1)} 
+                />
+              </Elements>
             )}
 
-            <button type="submit" className="btn-primary"
-              style={{ width: '100%', justifyContent: 'center', marginTop: 8, fontSize: 15 }}
-              disabled={processing}>
-              {processing ? 'Processing…' : step < 2 ? `Continue to ${STEPS[step + 1]}` : `Pay £${total.toFixed(2)}`}
-            </button>
+            {step < 2 && (
+              <button type="submit" className="btn-primary"
+                style={{ width: '100%', justifyContent: 'center', marginTop: 8, fontSize: 15 }}
+                disabled={processing}>
+                {processing ? 'Processing…' : `Continue to ${STEPS[step + 1]}`}
+              </button>
+            )}
           </form>
         </div>
 

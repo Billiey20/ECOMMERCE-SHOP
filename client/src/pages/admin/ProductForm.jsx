@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const ProductForm = () => {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -27,12 +29,27 @@ const ProductForm = () => {
     setFormData({ ...formData, variants: newVariants });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate API call to POST /api/products
-    console.log('Submitting:', formData);
-    // On success:
-    navigate('/admin/products');
+    try {
+      const res = await fetch('http://localhost:5000/api/products', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        navigate('/admin/products');
+      } else {
+        alert(data.error || 'Failed to create product');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error creating product');
+    }
   };
 
   const inputStyle = { width: '100%', padding: '10px', margin: '5px 0 15px', borderRadius: '4px', border: '1px solid var(--border-color)' };

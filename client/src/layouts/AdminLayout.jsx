@@ -1,13 +1,28 @@
-import { Link, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, Settings, Tag, BarChart2, Percent, BarChart3 } from 'lucide-react';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Settings, Tag, BarChart2, Percent, BarChart3, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = () => {
+  const { user, token, loading, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && (!user || (user.role !== 'Admin' && user.role !== 'Operations Manager'))) {
+      navigate('/login');
+    }
+  }, [user, loading, navigate]);
+
+  if (loading || !user) {
+    return <div style={{ padding: 100, textAlign: 'center' }}>Loading Admin...</div>;
+  }
+
   return (
     <div className="admin-layout">
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          SHOPFLOW
+          SHOPFLOW Admin
         </div>
         <nav className="sidebar-nav">
           <Link to="/admin" className="sidebar-link">
@@ -52,9 +67,12 @@ const AdminLayout = () => {
       {/* Main Content Area */}
       <main className="main-content">
         {/* Topbar */}
-        <header className="topbar">
-          <div className="topbar-user">
-            Admin User
+        <header className="topbar" style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 20px', alignItems: 'center' }}>
+          <div className="topbar-user" style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+            <span style={{ fontWeight: 500 }}>{user.first_name} {user.last_name}</span>
+            <button onClick={() => { logout(); navigate('/login'); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand-muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <LogOut size={16} /> Logout
+            </button>
           </div>
         </header>
 

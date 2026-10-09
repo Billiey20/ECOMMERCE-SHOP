@@ -16,22 +16,28 @@ import Shop from './pages/storefront/Shop';
 import Checkout from './pages/storefront/Checkout';
 import OrderConfirmation from './pages/storefront/OrderConfirmation';
 import Account from './pages/storefront/Account';
+import Login from './pages/storefront/Login';
+import Register from './pages/storefront/Register';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <Routes>
-          {/* Storefront Routes */}
-          <Route path="/" element={<Storefront />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
-          <Route path="/account" element={<Account />} />
-          
-          {/* Admin Routes */}
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <Routes>
+            {/* Storefront Routes */}
+            <Route path="/" element={<Storefront />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="products" element={<Products />} />
@@ -46,6 +52,7 @@ function App() {
         </Routes>
       </Router>
     </CartProvider>
+    </AuthProvider>
   );
 }
 

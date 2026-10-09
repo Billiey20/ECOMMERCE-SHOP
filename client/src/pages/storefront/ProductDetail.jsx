@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import { getProductImage } from '../../utils/imageMapper';
 import '../../styles/storefront.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const { addItem } = useCart();
+  const { user, token } = useAuth();
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [added, setAdded] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -31,8 +39,55 @@ const ProductDetail = () => {
       }
     };
     
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/reviews/${id}`);
+        const data = await res.json();
+        if (data.success) {
+          setReviews(data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching reviews:', err);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
     fetchProduct();
+    fetchReviews();
   }, [id]);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!token) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/reviews/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(reviewForm)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setReviews([{
+          id: data.reviewId,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment,
+          created_at: new Date().toISOString()
+        }, ...reviews]);
+        setReviewForm({ rating: 5, comment: '' });
+      } else {
+        alert(data.error || 'Failed to submit review');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error submitting review');
+    }
+  };
 
   const handleAddToCart = () => {
     if (!selectedVariant || selectedVariant.available === 0) return;
@@ -130,6 +185,70 @@ const ProductDetail = () => {
             <span>🚚 Free shipping over $60</span>
             <span>↩ 30-day returns</span>
             <span>✦ Cruelty free</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div style={{ maxWidth: 1200, margin: '60px auto', padding: '40px 20px', borderTop: '1px solid var(--brand-border)' }}>
+        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, marginBottom: 32 }}>Customer Reviews</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 60 }}>
+          <div>
+            <h3 style={{ fontSize: 18, marginBottom: 16 }}>Write a Review</h3>
+            {user ? (
+              <form onSubmit={handleReviewSubmit}>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 14, marginBottom: 8 }}>Rating</label>
+                  <select 
+                    value={reviewForm.rating} 
+                    onChange={e => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })}
+                    style={{ width: '100%', padding: '10px', borderRadius: 4, border: '1px solid var(--brand-border)' }}>
+                    <option value={5}>5 Stars - Excellent</option>
+                    <option value={4}>4 Stars - Good</option>
+                    <option value={3}>3 Stars - Average</option>
+                    <option value={2}>2 Stars - Poor</option>
+                    <option value={1}>1 Star - Terrible</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 14, marginBottom: 8 }}>Comment</label>
+                  <textarea 
+                    value={reviewForm.comment}
+                    onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    required
+                    style={{ width: '100%', padding: '10px', borderRadius: 4, border: '1px solid var(--brand-border)', height: 100 }}
+                  />
+                </div>
+                <button type="submit" className="btn-primary" style={{ padding: '10px 20px' }}>Submit Review</button>
+              </form>
+            ) : (
+              <p style={{ color: 'var(--brand-muted)' }}>Please <Link to="/login" style={{ color: 'var(--brand-dark)' }}>sign in</Link> to leave a review.</p>
+            )}
+          </div>
+          
+          <div>
+            {reviewsLoading ? (
+              <p>Loading reviews...</p>
+            ) : reviews.length === 0 ? (
+              <p style={{ color: 'var(--brand-muted)' }}>No reviews yet. Be the first to review this product!</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {reviews.map(review => (
+                  <div key={review.id} style={{ borderBottom: '1px solid var(--brand-border)', paddingBottom: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                      <div style={{ display: 'flex', color: '#f59e0b', marginRight: 12 }}>
+                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < review.rating ? "currentColor" : "none"} />)}
+                      </div>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{review.first_name} {review.last_name}</span>
+                      <span style={{ color: 'var(--brand-muted)', fontSize: 13, marginLeft: 'auto' }}>
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--brand-text)' }}>{review.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

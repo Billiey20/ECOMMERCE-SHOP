@@ -1,13 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const Products = () => {
-  // In a real app, fetch products from /api/products here.
-  const mockProducts = [
-    { id: 1, title: 'Vitamin C Serum', status: 'active', variant_count: 2, total_inventory: 150 },
-    { id: 2, title: 'Hydrating Cream', status: 'draft', variant_count: 1, total_inventory: 0 }
-  ];
+  const { token } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/products', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setProducts(data.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch products', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (token) fetchProducts();
+  }, [token]);
 
   return (
     <div>
@@ -33,7 +51,9 @@ const Products = () => {
             </tr>
           </thead>
           <tbody>
-            {mockProducts.map(product => (
+            {loading ? (
+              <tr><td colSpan="4" style={{ padding: '20px', textAlign: 'center' }}>Loading products...</td></tr>
+            ) : products.map(product => (
               <tr key={product.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                 <td style={{ padding: '15px 20px', fontWeight: '500' }}>{product.title}</td>
                 <td style={{ padding: '15px 20px' }}>
@@ -45,8 +65,8 @@ const Products = () => {
                     {product.status.toUpperCase()}
                   </span>
                 </td>
-                <td style={{ padding: '15px 20px' }}>{product.total_inventory} in stock</td>
-                <td style={{ padding: '15px 20px' }}>{product.variant_count} variant(s)</td>
+                <td style={{ padding: '15px 20px' }}>{product.total_inventory || 0} in stock</td>
+                <td style={{ padding: '15px 20px' }}>{product.variant_count || 0} variant(s)</td>
               </tr>
             ))}
           </tbody>

@@ -1,26 +1,59 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
+import { useAuth } from '../../context/AuthContext';
 
 const Account = () => {
+  const { user, token, logout, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock user orders (in a real app, you'd fetch /api/customers/:id/orders using JWT)
-    setTimeout(() => {
-      setOrders([
-        { id: 1042, date: '2026-09-17', status: 'processing', total: 114.98 },
-        { id: 981, date: '2026-08-10', status: 'delivered', total: 45.00 },
-      ]);
-      setLoading(false);
-    }, 600);
-  }, []);
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/orders', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Temporarily filtering by user_id on client, though in production we should have an /api/orders/me endpoint
+          const userOrders = data.data.filter(o => o.user_id === user?.id);
+          setOrders(userOrders);
+        }
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [token, user]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  if (authLoading || !user) {
+    return <div style={{ padding: 100, textAlign: 'center' }}>Loading...</div>;
+  }
 
   return (
     <div>
       <StorefrontNav />
       <div style={{ maxWidth: '1000px', margin: '40px auto', padding: '0 20px', minHeight: '60vh' }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", marginBottom: '30px' }}>My Account</h1>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", marginBottom: '30px' }}>
+          Welcome back, {user.first_name}!
+        </h1>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '40px' }}>
           {/* Sidebar Nav */}
@@ -28,7 +61,7 @@ const Account = () => {
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               <li style={{ padding: '12px 0', borderBottom: '1px solid var(--brand-border)', fontWeight: 600, color: 'var(--brand-dark)' }}>Order History</li>
               <li style={{ padding: '12px 0', borderBottom: '1px solid var(--brand-border)', color: 'var(--brand-text)', cursor: 'pointer' }}>Profile Details</li>
-              <li style={{ padding: '12px 0', color: 'var(--brand-text)', cursor: 'pointer' }}>Sign Out</li>
+              <li onClick={handleLogout} style={{ padding: '12px 0', color: '#ef4444', cursor: 'pointer', fontWeight: 500 }}>Sign Out</li>
             </ul>
           </div>
 
@@ -54,9 +87,17 @@ const Account = () => {
                     {orders.map(order => (
                       <tr key={order.id} style={{ borderBottom: '1px solid var(--brand-border)' }}>
                         <td style={{ padding: '16px', fontWeight: 500 }}>#{order.id}</td>
-                        <td style={{ padding: '16px', color: 'var(--brand-muted)' }}>{order.date}</td>
-                        <td style={{ padding: '16px', textTransform: 'capitalize' }}>{order.status}</td>
-                        <td style={{ padding: '16px', fontWeight: 500 }}>${order.total.toFixed(2)}</td>
+                        <td style={{ padding: '16px', color: 'var(--brand-muted)' }}>{new Date(order.created_at).toLocaleDateString()}</td>
+                        <td style={{ padding: '16px', textTransform: 'capitalize' }}>
+                          <span style={{ 
+                            padding: '4px 8px', borderRadius: 20, fontSize: 12, fontWeight: 500,
+                            backgroundColor: order.status === 'delivered' ? '#d1fae5' : order.status === 'shipped' ? '#dbeafe' : '#fef3c7',
+                            color: order.status === 'delivered' ? '#065f46' : order.status === 'shipped' ? '#1e40af' : '#92400e'
+                          }}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px', fontWeight: 500 }}>${Number(order.total_amount).toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -67,7 +108,7 @@ const Account = () => {
         </div>
       </div>
       <footer className="sf-footer" style={{ marginTop: '60px' }}>
-        <p><strong>LUMORA SKIN</strong> · © 2026 · Demo by ShopFlow</p>
+        <p><strong>SHOPFLOW</strong> · © 2026 · E-commerce Demo</p>
       </footer>
     </div>
   );

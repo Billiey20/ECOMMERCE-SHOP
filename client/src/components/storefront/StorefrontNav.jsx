@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, User } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import CartDrawer from './CartDrawer';
 
 const StorefrontNav = () => {
   const { totalItems } = useCart();
+  const { user } = useAuth();
   const [cartOpen, setCartOpen] = useState(false);
 
   return (
@@ -21,6 +23,10 @@ const StorefrontNav = () => {
         </div>
 
         <div className="sf-nav-actions">
+          <Link to={user ? "/account" : "/login"} style={{ display: 'flex', alignItems: 'center', color: 'var(--brand-dark)', textDecoration: 'none', marginRight: 16 }}>
+            <User size={22} />
+            <span style={{ marginLeft: 6, fontSize: 13, fontWeight: 500 }}>{user ? 'Account' : 'Sign In'}</span>
+          </Link>
           <button className="sf-cart-btn" onClick={() => setCartOpen(true)}>
             <ShoppingBag size={22} />
             {totalItems > 0 && <span className="sf-cart-count">{totalItems}</span>}

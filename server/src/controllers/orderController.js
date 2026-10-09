@@ -15,14 +15,13 @@ exports.createOrder = async (req, res) => {
             await connection.beginTransaction();
 
             // 1. We might want to create or find user/customer. 
-            // For simplicity, we'll insert a guest order with NULL user_id but store address.
             const addressString = `${customer.first_name} ${customer.last_name}, ${customer.email}, ${customer.address}, ${customer.city}, ${customer.postcode}, ${customer.country}`;
 
             // 2. Create the order
             const [orderResult] = await connection.query(`
-                INSERT INTO Orders (total_amount, status, payment_status, shipping_address)
-                VALUES (?, 'processing', 'paid', ?)
-            `, [total, addressString]);
+                INSERT INTO Orders (user_id, total_amount, status, payment_status, shipping_address)
+                VALUES (?, ?, 'processing', 'paid', ?)
+            `, [customer.user_id || null, total, addressString]);
             
             const orderId = orderResult.insertId;
 
