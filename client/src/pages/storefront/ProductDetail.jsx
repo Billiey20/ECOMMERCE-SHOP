@@ -58,7 +58,7 @@ const ProductDetail = () => {
         
         {/* Image */}
         <div style={{ flex: 1, minHeight: 500, borderRadius: 12, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src={getProductImage(product.product_type)} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={getProductImage(product)} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
 
         {/* Info */}

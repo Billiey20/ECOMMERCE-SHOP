@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import StorefrontNav from '../../components/storefront/StorefrontNav';
 import { getProductImage } from '../../utils/imageMapper';
+import Skeleton from '../../components/Skeleton';
 
 const SORT_OPTIONS = [
   { label: 'Best Selling', value: 'best_selling' },
@@ -61,6 +62,21 @@ const Shop = () => {
     
     fetchProducts();
   }, [activeCollection]);
+
+  const sortedProducts = useMemo(() => {
+    let sorted = [...products];
+    if (sort === 'price_asc') {
+      sorted.sort((a, b) => Number(a.starting_price) - Number(b.starting_price));
+    } else if (sort === 'price_desc') {
+      sorted.sort((a, b) => Number(b.starting_price) - Number(a.starting_price));
+    } else if (sort === 'newest') {
+      sorted.sort((a, b) => b.id - a.id);
+    } else if (sort === 'best_selling') {
+      sorted.sort((a, b) => Number(b.total_sales || 0) - Number(a.total_sales || 0));
+    }
+    return sorted;
+  }, [products, sort]);
+
   return (
     <div>
       <StorefrontNav />
@@ -103,30 +119,43 @@ const Shop = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
-              {products.map(product => (
-                <Link to={`/product/${product.id}`} key={product.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ border: '1px solid var(--brand-border)', borderRadius: '8px', overflow: 'hidden', transition: 'box-shadow 0.2s', backgroundColor: '#fff' }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-                  >
-                    {/* Product Image Placeholder */}
-                    <div style={{ height: '220px', backgroundColor: 'var(--brand-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                      <img src={getProductImage(product.product_type)} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-
+              {loading ? (
+                Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} style={{ border: '1px solid var(--brand-border)', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fff' }}>
+                    <Skeleton width="100%" height="220px" borderRadius="0" />
                     <div style={{ padding: '15px' }}>
-                      <p style={{ margin: '0 0 4px', fontSize: '11px', color: 'var(--brand-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{product.vendor}</p>
-                      <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600 }}>{product.title}</h3>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 'bold' }}>From ${product.starting_price}</span>
-                        {product.total_inventory === 0 && (
-                          <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 600 }}>Sold Out</span>
-                        )}
-                      </div>
+                      <div style={{ marginBottom: '8px' }}><Skeleton width="60%" height="12px" /></div>
+                      <div style={{ marginBottom: '12px' }}><Skeleton width="90%" height="20px" /></div>
+                      <div><Skeleton width="40%" height="16px" /></div>
                     </div>
                   </div>
-                </Link>
-              ))}
+                ))
+              ) : (
+                sortedProducts.map(product => (
+                  <Link to={`/product/${product.id}`} key={product.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div style={{ border: '1px solid var(--brand-border)', borderRadius: '8px', overflow: 'hidden', transition: 'box-shadow 0.2s', backgroundColor: '#fff' }}
+                      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'}
+                      onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                    >
+                      {/* Product Image Placeholder */}
+                      <div style={{ height: '220px', backgroundColor: 'var(--brand-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        <img src={getProductImage(product)} alt={product.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+
+                      <div style={{ padding: '15px' }}>
+                        <p style={{ margin: '0 0 4px', fontSize: '11px', color: 'var(--brand-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{product.vendor}</p>
+                        <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600 }}>{product.title}</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: 'bold' }}>From ${product.starting_price}</span>
+                          {product.total_inventory === 0 && (
+                            <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 600 }}>Sold Out</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </div>
         </div>

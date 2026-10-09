@@ -40,9 +40,10 @@ exports.getStorefrontCollection = async (req, res) => {
         if (cols.length === 0) return res.status(404).json({ success: false, error: 'Collection not found' });
 
         const [products] = await db.query(`
-            SELECT p.id, p.title, p.vendor,
+            SELECT p.id, p.title, p.vendor, p.product_type,
                    MIN(v.price) as starting_price,
-                   SUM(i.available) as total_inventory
+                   SUM(i.available) as total_inventory,
+                   COALESCE((SELECT SUM(oi.quantity) FROM Order_Items oi JOIN Variants v2 ON oi.variant_id = v2.id WHERE v2.product_id = p.id), 0) as total_sales
             FROM Products p
             JOIN Collection_Products cp ON p.id = cp.product_id
             LEFT JOIN Variants v ON p.id = v.product_id
@@ -66,7 +67,8 @@ exports.getStorefrontProducts = async (req, res) => {
         const [products] = await db.query(`
             SELECT p.id, p.title, p.vendor, p.product_type,
                    MIN(v.price) as starting_price,
-                   SUM(i.available) as total_inventory
+                   SUM(i.available) as total_inventory,
+                   COALESCE((SELECT SUM(oi.quantity) FROM Order_Items oi JOIN Variants v2 ON oi.variant_id = v2.id WHERE v2.product_id = p.id), 0) as total_sales
             FROM Products p
             LEFT JOIN Variants v ON p.id = v.product_id
             LEFT JOIN Inventory i ON v.id = i.variant_id

@@ -9,25 +9,24 @@ const Orders = () => {
 
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Mock fetching orders
+  // Fetch orders from API
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
-      // In production: fetch from /api/orders?status=filter
-      // Mocking response for now
-      setTimeout(() => {
-        setOrders([
-          { id: 1042, user_id: 2, total_amount: 114.98, status: 'processing', payment_status: 'paid', created_at: new Date().toISOString(), shipping_address: '123 Fake St, London, UK' },
-          { id: 1041, user_id: 3, total_amount: 34.99, status: 'packed', payment_status: 'paid', created_at: new Date(Date.now() - 86400000).toISOString(), shipping_address: '456 Test Ave, New York, USA' },
-          { id: 1040, user_id: 4, total_amount: 65.00, status: 'shipped', payment_status: 'paid', created_at: new Date(Date.now() - 172800000).toISOString(), shipping_address: '789 Demo Blvd, Sydney, AUS' },
-          { id: 1039, user_id: 5, total_amount: 29.99, status: 'delivered', payment_status: 'paid', created_at: new Date(Date.now() - 345600000).toISOString(), shipping_address: '321 Real Rd, Toronto, CAN' },
-          { id: 1038, user_id: 6, total_amount: 89.00, status: 'refunded', payment_status: 'refunded', created_at: new Date(Date.now() - 400000000).toISOString(), shipping_address: '111 Fake Ave, Austin, TX' },
-        ]);
+      try {
+        const res = await fetch('http://localhost:5000/api/orders');
+        const json = await res.json();
+        if (json.success) {
+          setOrders(json.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
+      } finally {
         setLoading(false);
-      }, 500);
+      }
     };
     fetchOrders();
-  }, [filter]);
+  }, []); // Fetch once, filter locally
 
   const handleRefund = async (orderId) => {
     if (!window.confirm(`Are you sure you want to process a return and refund order #${orderId}? This will restock inventory.`)) return;
@@ -36,13 +35,12 @@ const Orders = () => {
     try {
       const res = await fetch(`http://localhost:5000/api/orders/${orderId}/refund`, { method: 'POST' });
       const data = await res.json();
-      if (data.success || data.mock) { // mock handled if DB is down
+      if (data.success || data.mock) { 
          setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'refunded', payment_status: 'refunded' } : o));
          setSelectedOrder(null);
       }
     } catch (err) {
       console.error(err);
-      // Fallback update for mock UI
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'refunded', payment_status: 'refunded' } : o));
       setSelectedOrder(null);
     } finally {
@@ -51,6 +49,12 @@ const Orders = () => {
   };
 
   const filteredOrders = filter === 'all' ? orders : orders.filter(o => o.status === filter);
+
+  // Dynamic KPIs
+  const totalOrders = orders.length;
+  const pendingCount = orders.filter(o => o.status === 'processing').length;
+  const packedCount = orders.filter(o => o.status === 'packed').length;
+  const totalRevenue = orders.filter(o => o.status !== 'cancelled' && o.status !== 'refunded').reduce((acc, curr) => acc + Number(curr.total_amount), 0);
 
   const StatusBadge = ({ status }) => {
     const styles = {
@@ -79,19 +83,19 @@ const Orders = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 32 }}>
         <div style={{ backgroundColor: '#fff', padding: 20, borderRadius: 8, border: '1px solid #e5e7eb' }}>
           <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8, fontWeight: 500 }}>Total Orders</p>
-          <p style={{ fontSize: 28, fontWeight: 700, color: '#111827' }}>1,284</p>
+          <p style={{ fontSize: 28, fontWeight: 700, color: '#111827' }}>{totalOrders.toLocaleString()}</p>
         </div>
         <div style={{ backgroundColor: '#fff', padding: 20, borderRadius: 8, border: '1px solid #e5e7eb' }}>
           <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8, fontWeight: 500 }}>Pending Fulfillment</p>
-          <p style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>42</p>
+          <p style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{pendingCount}</p>
         </div>
         <div style={{ backgroundColor: '#fff', padding: 20, borderRadius: 8, border: '1px solid #e5e7eb' }}>
           <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8, fontWeight: 500 }}>Ready to Ship</p>
-          <p style={{ fontSize: 28, fontWeight: 700, color: '#4f46e5' }}>18</p>
+          <p style={{ fontSize: 28, fontWeight: 700, color: '#4f46e5' }}>{packedCount}</p>
         </div>
         <div style={{ backgroundColor: '#fff', padding: 20, borderRadius: 8, border: '1px solid #e5e7eb' }}>
           <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8, fontWeight: 500 }}>Total Revenue</p>
-          <p style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>$48,290</p>
+          <p style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -134,7 +138,7 @@ const Orders = () => {
                 <td style={{ padding: '16px 20px', fontWeight: 600, color: '#111827' }}>#{order.id}</td>
                 <td style={{ padding: '16px 20px', color: '#6b7280', fontSize: 14 }}>{new Date(order.created_at).toLocaleDateString()}</td>
                 <td style={{ padding: '16px 20px' }}><StatusBadge status={order.status} /></td>
-                <td style={{ padding: '16px 20px', fontWeight: 500 }}>${order.total_amount.toFixed(2)}</td>
+                <td style={{ padding: '16px 20px', fontWeight: 500 }}>${Number(order.total_amount).toFixed(2)}</td>
                 <td style={{ padding: '16px 20px' }}>
                   <button 
                     style={{ padding: '6px 12px', border: '1px solid #d1d5db', borderRadius: 4, background: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', color: '#374151' }}

@@ -73,7 +73,7 @@ const Homepage = () => {
           <Link key={p.id} to={`/product/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="sf-product-card">
               <div className="sf-product-card-image" style={{ overflow: 'hidden' }}>
-                <img src={getProductImage(p.product_type)} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={getProductImage(p)} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <p className="sf-product-vendor">{p.vendor}</p>
               <h3 className="sf-product-title">{p.title}</h3>
